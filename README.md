@@ -6,28 +6,28 @@ A hack to add two factor authentication to Latch (at this moment the Vault's) AP
 
 Enable user&password authentication
 
- | vault auth-enable userpass
+    vault auth-enable userpass
 
 Set Multi factor authentication to Latch
 
- | vault write auth/userpass/mfa_config type=latch
+    vault write auth/userpass/mfa_config type=latch
 
 Set Latch application id and the secret
 
- | vault write auth/userpass/latch/access app_id=[Latch App ID] app_secret=[Latch App Secret]
+    vault write auth/userpass/latch/access app_id=[Latch App ID] app_secret=[Latch App Secret]
 
 Create the user ged in userpass backend
 
- | vault write auth/userpass/users/ged password=ged policies=root
+    vault write auth/userpass/users/ged password=ged policies=root
 
 Run the Latch Mobile App and generate a pairing token. Assign the token to the user.
 
- | vault write auth/userpass/latch/users/ged token=[Generated Token]
+    vault write auth/userpass/latch/users/ged token=[Generated Token]
 
 Test to authenticate. Turn on / off the switch to test.
 
- | vault auth -method=userpass username=ged password=ged
+    vault auth -method=userpass username=ged password=ged
 
 Delete the user in the latch path to disenroll the user  
 
- |  vault delete auth/userpass/latch/users/ged 
+    vault delete auth/userpass/latch/users/ged 
