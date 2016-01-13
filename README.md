@@ -1,6 +1,6 @@
 # Vault Latch 2fac hack
 
-A hack to add two factor authentication to Latch (at this moment the Vault's) API is not ready to add more two factor authentications
+A hack to add two factor authentication to Latch (at this moment the Vault's API is not ready to add more two factor authentications)
 
 # Quick & dirty demo
 
