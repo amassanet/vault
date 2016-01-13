@@ -13,7 +13,7 @@
 package mfa
 
 import (
-	"github.com/hashicorp/vault/helper/mfa/duo"
+	"github.com/hashicorp/vault/helper/mfa/latch"
 	"github.com/hashicorp/vault/logical"
 	"github.com/hashicorp/vault/logical/framework"
 )
@@ -24,22 +24,22 @@ import (
 func MFAPaths(originalBackend *framework.Backend, loginPath *framework.Path) []*framework.Path {
 	var b backend
 	b.Backend = originalBackend
-	return append(duo.DuoPaths(), pathMFAConfig(&b), wrapLoginPath(&b, loginPath))
+	return append(latch.LatchPaths(), pathMFAConfig(&b), wrapLoginPath(&b, loginPath))
 }
 
 // MFARootPaths returns path strings used to configure MFA. When adding MFA
 // to a backend, these paths should be included in
 // Backend.PathsSpecial.Root.
 func MFARootPaths() []string {
-	return append(duo.DuoRootPaths(), "mfa_config")
+	return append(latch.LatchRootPaths(), "mfa_config")
 }
 
 // HandlerFunc is the callback called to handle MFA for a login request.
-type HandlerFunc func (*logical.Request, *framework.FieldData, *logical.Response) (*logical.Response, error)
+type HandlerFunc func(*logical.Request, *framework.FieldData, *logical.Response) (*logical.Response, error)
 
 // handlers maps each supported MFA type to its handler.
 var handlers = map[string]HandlerFunc{
-	"duo": duo.DuoHandler,
+	"latch": latch.LatchHandler,
 }
 
 type backend struct {
@@ -52,7 +52,7 @@ func wrapLoginPath(b *backend, loginPath *framework.Path) *framework.Path {
 		Description: "One time passcode (optional)",
 	}
 	loginPath.Fields["method"] = &framework.FieldSchema{
-		Type:      framework.TypeString,
+		Type:        framework.TypeString,
 		Description: "Multi-factor auth method to use (optional)",
 	}
 	// wrap write callback to do MFA after auth
@@ -62,9 +62,9 @@ func wrapLoginPath(b *backend, loginPath *framework.Path) *framework.Path {
 }
 
 func (b *backend) wrapLoginHandler(loginHandler framework.OperationFunc) framework.OperationFunc {
-	return func (req *logical.Request, d *framework.FieldData) (*logical.Response, error) {
+	return func(req *logical.Request, d *framework.FieldData) (*logical.Response, error) {
 		// login with original login function first
-		resp, err := loginHandler(req, d);
+		resp, err := loginHandler(req, d)
 		if err != nil || resp.Auth == nil {
 			return resp, err
 		}
